@@ -1,1 +1,3 @@
-employee_id,name,department,position,date_of_joining,contact
+id,employee_id,name,department,position,contact,skills,certifications
+1,E001,John Doe,Engineering,Software Engineer,john.doe@email.com,"JavaScript;React","AWS Certified"
+2,E002,Jane Smith,HR,HR Manager,jane.smith@email.com,"Recruitment;Onboarding","PHR"

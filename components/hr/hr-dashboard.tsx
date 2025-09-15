@@ -71,7 +71,7 @@ export function HRDashboard() {
       import("@/lib/supabaseClient").then(({ supabase }) => {
         supabase
           .from("employee_details")
-          .select("*, employee(email)")
+          .select("id, employee_id, name, department, position, contact, skills, certifications")
           .then(({ data, error }) => {
             if (error) setDetailsError("Failed to load employee details")
             else setEmployeeDetails(data || [])
@@ -210,7 +210,7 @@ export function HRDashboard() {
                     {uploading && <div className="mt-2 text-blue-600">Uploading...</div>}
                     {uploadError && <div className="mt-2 text-red-600">{uploadError}</div>}
                     {uploadSuccess && <div className="mt-2 text-green-600">{uploadSuccess}</div>}
-                    <div className="mt-2 text-xs text-muted-foreground text-center">Columns should match: <b>employee_id, name, department, position, date_of_joining, contact</b></div>
+                    <div className="mt-2 text-xs text-muted-foreground text-center">Columns should match: <b>id, employee_id, name, department, position, contact, skills, certifications</b></div>
                     <a
                       href="/employee_template.csv"
                       download
@@ -300,23 +300,27 @@ export function HRDashboard() {
                       <table className="min-w-full text-sm">
                         <thead>
                           <tr>
+                            <th className="px-2 py-1 text-left">ID</th>
+                            <th className="px-2 py-1 text-left">Employee ID</th>
                             <th className="px-2 py-1 text-left">Name</th>
-                            <th className="px-2 py-1 text-left">Email</th>
                             <th className="px-2 py-1 text-left">Department</th>
                             <th className="px-2 py-1 text-left">Position</th>
-                            <th className="px-2 py-1 text-left">Date of Joining</th>
                             <th className="px-2 py-1 text-left">Contact</th>
+                            <th className="px-2 py-1 text-left">Skills</th>
+                            <th className="px-2 py-1 text-left">Certifications</th>
                           </tr>
                         </thead>
                         <tbody>
                           {employeeDetails.map((emp) => (
                             <tr key={emp.id}>
+                              <td className="px-2 py-1">{emp.id}</td>
+                              <td className="px-2 py-1">{emp.employee_id}</td>
                               <td className="px-2 py-1">{emp.name}</td>
-                              <td className="px-2 py-1">{emp.employee?.email}</td>
                               <td className="px-2 py-1">{emp.department}</td>
                               <td className="px-2 py-1">{emp.position}</td>
-                              <td className="px-2 py-1">{emp.date_of_joining}</td>
                               <td className="px-2 py-1">{emp.contact}</td>
+                              <td className="px-2 py-1">{emp.skills || ""}</td>
+                              <td className="px-2 py-1">{emp.certifications || ""}</td>
                             </tr>
                           ))}
                         </tbody>
