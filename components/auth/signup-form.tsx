@@ -109,6 +109,9 @@ export function SignupForm() {
             </TabsContent>
           </Tabs>
         </CardContent>
+        <div className="mt-4 text-center">
+          <a href="/" className="text-blue-600 hover:underline">Already signed up? Sign in</a>
+        </div>
       </Card>
     </div>
   )

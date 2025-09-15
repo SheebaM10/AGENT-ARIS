@@ -11,6 +11,7 @@ import { Mail, Lock, Building2, User } from "lucide-react"
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("hr")
 
   const handleLogin = async (role: "hr" | "employee") => {
     setIsLoading(true)
@@ -26,15 +27,9 @@ export function LoginForm() {
     }
     try {
       const { supabase } = await import("@/lib/supabaseClient")
-      const table = role === "hr" ? "hr" : "employee"
-      const { data, error } = await supabase
-        .from(table)
-        .select()
-        .eq("email", email)
-        .eq("password", password)
-        .single()
-      if (error || !data) {
-        setError("Invalid credentials")
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError("Invalid credentials: " + error.message)
       } else {
         window.location.href = role === "hr" ? "/hr/dashboard" : "/employee/dashboard"
       }
@@ -54,7 +49,7 @@ export function LoginForm() {
         <CardDescription className="text-center">Choose your role to access the appropriate portal</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="hr" className="w-full">
+  <Tabs defaultValue="hr" className="w-full" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="hr" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
@@ -109,7 +104,12 @@ export function LoginForm() {
 
       </CardContent>
       <div className="mt-4 text-center">
-        <a href="/signup" className="text-blue-600 hover:underline">Don't have an account? Sign up</a>
+        <a
+          href={`/signup?role=${activeTab}`}
+          className="text-blue-600 hover:underline"
+        >
+          Don't have an account? Sign up
+        </a>
       </div>
     </Card>
   )

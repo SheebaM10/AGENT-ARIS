@@ -24,6 +24,40 @@ import { CareerPathModeling } from "../career/career-path-modeling"
 import { TrendsAnalytics } from "../analytics/trends-analytics"
 
 export function HRDashboard() {
+  // Excel upload state
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
+
+  // Handle Excel file upload
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploading(true)
+    setUploadError(null)
+    setUploadSuccess(null)
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const XLSX = await import("xlsx")
+      const reader = new FileReader()
+      reader.onload = async (evt) => {
+        const data = new Uint8Array(evt.target?.result as ArrayBuffer)
+        const workbook = XLSX.read(data, { type: "array" })
+        const sheetName = workbook.SheetNames[0]
+        const sheet = workbook.Sheets[sheetName]
+        const rows = XLSX.utils.sheet_to_json(sheet)
+        // Insert each row into Supabase
+        const { supabase } = await import("@/lib/supabaseClient")
+        const { error } = await supabase.from("employee_details").insert(rows)
+        if (error) setUploadError("Upload failed: " + error.message)
+        else setUploadSuccess("Employee data uploaded successfully!")
+        setUploading(false)
+      }
+      reader.readAsArrayBuffer(file)
+    } catch (err) {
+      setUploadError("Upload failed")
+      setUploading(false)
+    }
+  }
   const [activeTab, setActiveTab] = useState("overview")
   const [employeeDetails, setEmployeeDetails] = useState<any[]>([])
   const [loadingDetails, setLoadingDetails] = useState(false)
@@ -160,6 +194,33 @@ export function HRDashboard() {
         <main className="flex-1 p-6">
           {activeTab === "overview" && (
             <div className="space-y-6">
+              {/* Excel Upload Section */}
+              <Card className="mb-6 p-4 rounded-xl shadow-md border border-gray-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl font-semibold">Upload Employee Data (Excel)</CardTitle>
+                  <CardDescription className="text-gray-600">Import employees in bulk using an .xlsx file</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center gap-4">
+                    <label htmlFor="excel-upload" className="w-full cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-gray-400 rounded-lg p-6 bg-gray-50 hover:bg-gray-100 transition">
+                      <span className="text-lg font-medium text-gray-700 mb-2">Drag & drop or click to select Excel file</span>
+                      <span className="text-xs text-gray-500">Accepted format: .xlsx</span>
+                      <input id="excel-upload" type="file" accept=".xlsx" onChange={handleExcelUpload} disabled={uploading} className="hidden" />
+                    </label>
+                    {uploading && <div className="mt-2 text-blue-600">Uploading...</div>}
+                    {uploadError && <div className="mt-2 text-red-600">{uploadError}</div>}
+                    {uploadSuccess && <div className="mt-2 text-green-600">{uploadSuccess}</div>}
+                    <div className="mt-2 text-xs text-muted-foreground text-center">Columns should match: <b>employee_id, name, department, position, date_of_joining, contact</b></div>
+                    <a
+                      href="/employee_template.csv"
+                      download
+                      className="inline-block mt-2 text-blue-600 hover:underline text-sm"
+                    >
+                      Download sample CSV template
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Dashboard Overview</h2>
                 <Button>
